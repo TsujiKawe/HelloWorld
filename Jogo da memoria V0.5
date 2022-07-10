@@ -1,0 +1,153 @@
+#include <iostream>
+#include <time.h>
+#include <locale>
+#include <cstdlib>
+
+///Trabalho feito por: Breno Grimaldi, Lucas Pitágoras e Kawe Tsuji///
+
+using namespace std;
+
+#define T 4 /// Definição do tamanho da matriz i e j =  4
+
+int main()
+{
+    /// Variaveis:
+    setlocale (LC_ALL, "");
+    int MatPrin[T][T] = {1, 4, 5, 2,   /// Resposta (00,22) (01,23) (02,31) (03,11) (10,13) (12,33) (20,32) (21,30) da normal
+                         7, 2, 8, 7,
+                         3, 6, 1, 4,
+                         6, 5, 3, 8};
+
+    int MatGame[T][T] = {0, 0, 0, 0,
+                         0, 0, 0, 0,
+                         0, 0, 0, 0,
+                         0, 0, 0, 0};
+
+    int matGabarito[T][T], TipoMatriz, LinhaAtual, ColunaAtual, LinhaAnts, ColunaAnts, contador = 0, NumJogadas = 0, Pares = 0;
+    bool Win = false, Lose = false;
+
+    //--------------------------------------------------------------------------------------------//
+
+
+    system("cls");
+    srand(time(NULL)); // Semente randomica gerada a partir da hora do sistema
+
+    TipoMatriz = (rand ()% 03) +1;
+    switch (TipoMatriz){
+
+    case 1: // No case 1 ele copia a matriz principal para a matriz gabarito
+        for (int i = 0; i < T; i++){
+            for (int j = 0; j < T; j++){
+                matGabarito[i][j] = MatPrin[i][j];
+            }
+        }
+        break;
+    case 2: // No case 2 ele pega a transposta da matriz principal para a matriz gabarito
+        for (int i = 0; i < T; i++){
+            for (int j = 0; j < T; j++){
+                matGabarito[i][j] = MatPrin[j][i];
+            }
+        }
+        break;
+    case 3: // No case 3 ele pega a matriz invertida por linha para a matriz gabarito
+        for (int i = 3; i >= 0; i--){
+            for (int j = 0; j < T; j++){
+                for (int k = 0; k < T; k++){
+                    /// Quando [i] ser maior ou igual a zero, ele irá adicionar o valor da linha para a matriz gabarito
+                    matGabarito[i][j] = MatPrin[k - i][j];
+                }
+            }
+        }
+        break;
+    case 4: // No case 4 ele pega a matriz principal invertida por coluna para a matriz gabarito
+        for (int i = 3; i >= 0; i--){
+            for (int j = 0; j < T; j++){
+                for (int k = 0; k < T; k++){
+                    /// Quando [i] ser maior ou igual a zero, ele irá adicionar o valor da coluna para a matriz gabarito
+                    matGabarito[j][i] = MatPrin[j][k - i];
+                }
+            }
+        }
+        break;
+        default:
+        cout << "Falha na inicialização do jogo " << TipoMatriz;
+        break;
+    }
+
+    //------------------------------------------------------------------------------------------------------//
+
+        /// Se o jogador não perdeu, nem venceu o jogo vai continuar a ser exibido:
+    while (!Lose && !Win){
+        contador++;
+        cout << "\n\tJOGADAS: " << NumJogadas << "\n\n"; // Exibe o numero de jogadas no console
+
+        // Exibe a matriz do jogo
+        for (int i = 0; i < T; i++){
+            for (int j = 0; j < T; j++){
+            cout << MatGame[i][j] << "\t"; // "\t" para o Espaçamento
+            }
+          cout << endl;
+        }
+
+        cout << "\nInforme a posição da linha da peça para ser virada(de 0 a 3): " << endl;
+        cin >> LinhaAtual;
+
+        cout << "\nInforme a posição da coluna da peça para ser virada(de 0 a 3):" << endl;
+        cin >> ColunaAtual;
+        cout << "-------------------------------------------------------------\n";
+
+
+        /// Se o player estiver na primeira jogada [input]:
+        if (contador % 2 == 1){
+            LinhaAnts = LinhaAtual;
+            ColunaAnts = ColunaAtual;
+        }
+
+        /// Caso o número da linha e da coluna (atual e anterior) não estiver entre os valores da matriz [4][4] :
+        if ((LinhaAtual < 0 || LinhaAtual > 3) || (LinhaAnts < 0 || LinhaAnts > 3) || (ColunaAtual < 0 || ColunaAtual > 3) || (ColunaAnts < 0 || ColunaAnts > 3)){
+            NumJogadas++;
+            cout << "\n\tJOGADA NOK\n"; // "jogada invalida"
+            MatGame[LinhaAnts][ColunaAnts] = 0;
+            MatGame[LinhaAtual][ColunaAtual] = 0;
+            contador = 0; // Zerando o contador força o player a digitar de novo
+        }
+        else{ /// O valor da matriz gabarito é exibido no jogo (matriz gabarito vai para matriz do jogo)
+            MatGame[LinhaAtual][ColunaAtual] = matGabarito[LinhaAtual][ColunaAtual];
+
+
+            /// Caso o player estiver na segunda jogada [input]:
+            if (contador != 0 && contador % 2 == 0){
+                NumJogadas++;
+                /// Caso o valor anterior seja igual ao valor atual:
+                if (MatGame[LinhaAtual][ColunaAtual] == MatGame[LinhaAnts][ColunaAnts]){
+                    cout << "\n\tJOGADA OK\n"; // "jogada valida"
+                    Pares++;
+
+                }
+                else{
+                    cout << "\n\tJOGADA NOK\n"; // "jogada invalida"
+                    MatGame[LinhaAnts][ColunaAnts] = 0; // "reseta a matriz"
+                    MatGame[LinhaAtual][ColunaAtual] = 0;
+                }
+            }
+        }
+
+        ///caso o jogador esteja com 24 jogadas:
+        if (NumJogadas == 24){
+            system("cls");  // Limpa o console
+            // Exibe a mensagem "VOCÈ PERDEU" no console apos ter 24 jogadas
+            cout << "\t VOCÊ PERDEU " << endl;
+            system("pause");
+            return 0;
+        }
+        if (Pares == 8){
+            system("cls"); // Exibe a mensagem que o player venceu e o numero de jogadas
+            cout << "Você ganhou! foram nessesarias apenas: " << NumJogadas << " jogadas" << endl;
+            system("pause");
+            return 0;
+        }
+
+    }
+
+    return 0;
+}
